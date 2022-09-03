@@ -51,8 +51,12 @@ const Title = styled.h1`
 `;
 
 const Subtitle = styled.h4`
-  font-size: 35px;
-  margin-bottom: 10px;
+  font-size: 20px;
+  margin: 5% 0;
+  button {
+      margin-left: 5%;
+      border-radius: 5px;
+  }
 `;
 
 const Description = styled.p`
@@ -77,10 +81,17 @@ const Movie = () => {
             fragment: gql`
                 fragment MovieFragment on Movie {
                     isLiked 
+                    rating
                 }
-            `
-        })
-    }
+            `,
+            data: {
+                isLiked: !data.movie.isLiked,
+                rating: data.movie.isLiked
+                    ? `Please like me :(`
+                    : `Your like add to rating ${data.movie.rating}`
+            }
+            }
+        )}
 
     return (
         <Container>
@@ -89,7 +100,7 @@ const Movie = () => {
                 <Subtitle>{data?.movie?.year}</Subtitle>
                 <Subtitle>
                     {data?.movie?.rating}
-                    <button>{data?.movie?.isLiked?"Unlike":"Like"}</button>
+                    <button onClick={onClick}>{data?.movie?.isLiked?"Unlike":"Like"}</button>
                 </Subtitle>
                 <Description>{data?.movie?.description_full}</Description>
             </Column>
