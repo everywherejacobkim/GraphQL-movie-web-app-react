@@ -11,10 +11,17 @@ const GET_MOVIE = gql`
             year
             rating
             description_full
-            medium_cover_image
+            large_cover_image
+            isLiked @client
         }
     }
 `
+const Loading = styled.div`
+  font-size: 18px;
+  opacity: 0.5;
+  font-weight: 500;
+  margin-top: 10px;
+`;
 
 const Container = styled.div`
   height: 100vh;
@@ -24,19 +31,18 @@ const Container = styled.div`
   justify-content: space-around;
   align-items: center;
   color: white;
+  img{
+    width: 25%;
+    height: 65%;
+    background-color: transparent;
+    background-size: cover;
+    border-radius: 10px;
+  }
 `;
 
 const Column = styled.div`
   margin-left: 10px;
   width: 50%;
-  img{
-    width: 25%;
-    height: 60%;
-    background-color: transparent;
-    background-size: cover;
-    background-position: center center;
-    border-radius: 7px;
-  }
 `;
 
 const Title = styled.h1`
@@ -55,24 +61,39 @@ const Description = styled.p`
 
 const Movie = () => {
     const { id } = useParams();
-    const { data, loading } = useQuery(GET_MOVIE, {
+    const { data, loading, client:{cache} } = useQuery(GET_MOVIE, {
         variables: {
             movieId: id
         }
     });
     console.log(data, loading);
     if (loading) {
-        return <h1>Fetching movie...</h1>
+        return <Loading>Fetching movie...</Loading>
     }
+
+    const onClick = () => {
+        cache.writeFragment({
+            id: `Movie:${id}`,
+            fragment: gql`
+                fragment MovieFragment on Movie {
+                    isLiked 
+                }
+            `
+        })
+    }
+
     return (
         <Container>
             <Column>
-                <Title>{data.movie.title}</Title>
-                <img src={data.movie.medium_cover_image} alt="movie_image"></img>
-                <Subtitle>{data.movie.year}</Subtitle>
-                <Subtitle>{data.movie.rating}</Subtitle>
-                <Description>{data.movie.description_full}</Description>
+                <Title>{data?.movie?.title}</Title>
+                <Subtitle>{data?.movie?.year}</Subtitle>
+                <Subtitle>
+                    {data?.movie?.rating}
+                    <button>{data?.movie?.isLiked?"Unlike":"Like"}</button>
+                </Subtitle>
+                <Description>{data?.movie?.description_full}</Description>
             </Column>
+            <img src={data?.movie?.large_cover_image} alt={`${data?.movie?.title}`}></img>
         </Container>
 
   )
